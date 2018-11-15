@@ -1,0 +1,40 @@
+learning Java 8 features
+ 1. Lambda Expression
+ 2. Parallel Stream
+ 3. Date & Time
+ 4. NIO
+ 5. Default and Static Methods
+ 6. Nashorn
+
+ Lambda Expressions
+ 	1. filter collection using stream
+ 	2. use like, sort, Limit operator in Lambda expression
+ 	3. find first, sum, min, max, group By in Lambda expression 
+ 
+ Parallel Stream
+ 	1. Parallel and Sequential Stream comparison
+ 	2. Parallel Stream read file and word count
+ 
+ Default and Static functions
+	1. Use Default Methods
+	2. Use Static Methods
+ 
+ NIO
+	1. Read File Line By Line
+	2. Read File to Stream
+	3. Read File to String
+	4. Files.write()
+	5. BufferedWriter
+	6. Recursively walking directories
+	7. CSV into List using Stream
+
+ Date & Time
+ 	1.	LocalTime, LocaleDate
+ 	2. LocalDateTime
+ 	3. Date API utilities
+ 	4. Date Parsing and Formatting
+ 	5. Date API Legacy Date Time Support
+ 
+ Nashorn
+ 	1.	Invoking Javascript function from Java with/without Params
+ 9. Date API Utilities 
