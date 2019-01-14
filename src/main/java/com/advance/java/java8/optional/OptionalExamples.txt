@@ -1,0 +1,147 @@
+Optional
+Optional is a container type for a value which may be absent.
+
+e.g without optional
+
+User findUserById(String userId) { ... };
+
+If userId is not present in the database then the above function returns null. 
+Now, let’s consider the following code written by a client -
+
+User user = findUserById("667290");
+System.out.println("User's Name = " + user.getName());
+
+use optional to mitigate the risk of running into NullPointerException 
+Optional<User> findUserById(String userId) { ... };
+
+clients of this function are explicitly forced to handle this Null users
+
+Optional<User> optional = findUserById("667290");
+optional.ifPresent(user -> {
+    System.out.println("User's name = " + user.getName());    
+})
+
+Creating an Optional object
+1. Create an empty Optional
+
+An empty Optional Object describes the absence of a value.
+
+Optional<User> user = Optional.empty();
+
+2. Create an Optional with a non-null value -
+
+User user = new User("123455", "Ram Shaam");
+Optional<User> userOptional = Optional.of(user);
+If the argument supplied to Optional.of() is null, then it will throw a NullPointerException immediately 
+and the Optional object won’t be created.
+
+3. Create an Optional with a value which may or may not be null -
+
+Optional<User> userOptional = Optional.ofNullable(user);
+If the argument passed to Optional.ofNullable() is non-null, then it returns an Optional containing the specified value, 
+otherwise it returns an empty Optional.
+
+methods
+isPresent()
+ifPresent()
+Retrieving the value using get() method
+Optional’s get() method returns a value if it is present, otherwise it throws NoSuchElementException.
+
+User user = optional.get()
+You should avoid using get() method on your Optionals without first checking whether a value is present or not, because it throws an exception if the value is absent.
+
+Returning default value using orElse()
+orElse() is great when you want to return a default value if the Optional is empty. Consider the following example -
+
+// return "Unknown User" if user is null
+User finalUser = (user != null) ? user : new User("0", "Unknown User");
+Now, let’s see how we can write the above logic using Optional’s orElse() construct -
+
+// return "Unknown User" if user is null
+User finalUser = optionalUser.orElse(new User("0", "Unknown User"));
+Returning default value using orElseGet()
+Unlike orElse(), which returns a default value directly if the Optional is empty, orElseGet() 
+allows you to pass a Supplier function which is invoked when the Optional is empty. 
+The result of the Supplier function becomes the default value of the Optional -
+
+User finalUser = optionalUser.orElseGet(() -> {
+    return new User("0", "Unknown User");
+});
+
+You can use orElseThrow() to throw an exception if Optional is empty. A typical scenario in which this might be useful is - returning a custom ResourceNotFound() exception from your REST API if the object with the specified request parameters does not exist.
+
+@GetMapping("/users/{userId}")
+public User getUser(@PathVariable("userId") String userId) {
+    return userRepository.findByUserId(userId).orElseThrow(
+	    () -> new ResourceNotFoundException("User not found with userId " + userId);
+    );
+}
+Filtering values using filter() method
+Let’s say you have an Optional object of User. You want to check its gender and call a function if it’s a MALE. Here is how you would do it using old school method -
+
+if(user != null && user.getGender().equalsIgnoreCase("MALE")) {
+    // call a function
+}
+Now, let’s use Optional along with filter to achieve the same -
+
+userOptional.filter(user -> user.getGender().equalsIgnoreCase("MALE"))
+.ifPresent(() -> {
+    // Your function
+})
+The filter() method takes a predicate as an argument. If the Optional contains a non-null value and the value matches the given predicate, then filter() method returns an Optional with that value, otherwise it returns an empty Optional.
+
+So, the function inside ifPresent() in the above example will be called if and only if the Optional contains a user and user is a MALE.
+
+Extracting and transforming values using map()
+Let’s say that you want to get the address of a user if it is present and print it if the user is from India.
+
+Considering the following getAddress() method inside User class -
+
+Address getAddress() {
+    return this.address;
+}
+Here is how you would achieve the desired result -
+
+if(user != null) {
+    Address address = user.getAddress();
+    if(address != null && address.getCountry().equalsIgnoreCase("India")) {
+	    System.out.println("User belongs to India");
+    }
+}
+Now, let’s see how we can get the same result using map() method -
+
+userOptional.map(User::getAddress)
+.filter(address -> address.getCountry().equalsIgnoreCase("India"))
+.ifPresent(() -> {
+    System.out.println("User belongs to India");
+});
+You see how concise and readable the above code is? Let’s break the above code snippet and understand it in detail -
+
+// Extract User's address using map() method.
+Optional<Address> addressOptional = userOptional.map(User::getAddress)
+
+// filter address from India
+Optional<Address> indianAddressOptional = addressOptional.filter(address -> address.getCountry().equalsIgnoreCase("India"));
+
+// Print, if country is India
+indianAddressOptional.ifPresent(() -> {
+    System.out.println("User belongs to India");
+});
+In the above example, map() method returns an empty Optional in the following cases - 1. user is absent in userOptional. 2. user is present but getAdderess() returns null.
+
+otherwise, it returns an Optional<Address> containing user’s address.
+
+Cascading Optionals using flatMap()
+Let’s consider the above map() example again. You might ask that if user’s address can be null then why the heck aren’t you returning an Optional<Address> instead of plain Address from getAddress() method?
+
+And, You’re right! Let’s correct that, let’s now assume that getAddress() returns Optional<Address>. Do you think that above code will still work?
+
+The answer is no! The problem is the following line -
+
+Optional<Address> addressOptional = userOptional.map(User::getAddress)
+Since getAddress() returns Optional<Address>, the return type of userOptional.map() will be Optional<Optional<Address>>
+
+Optional<Optional<Address>> addressOptional = userOptional.map(User::getAddress)
+Oops! We certainly don’t want that nested Optional. Let’s use flatMap() to correct that -
+
+Optional<Address> addressOptional = userOptional.flatMap(User::getAddress)
